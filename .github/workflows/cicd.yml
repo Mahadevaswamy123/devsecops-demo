@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [main]
 
+# Allow GitHub Actions to commit deployment changes
+permissions:
+  contents: write
+
 jobs:
 
   # ==========================================
@@ -20,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -44,10 +48,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -70,10 +74,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -104,11 +108,12 @@ jobs:
       image_tag: ${{ steps.set_output.outputs.image_tag }}
 
     env:
+      # Change "your-app" to your actual Docker Hub repository
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/your-app
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -199,13 +204,14 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
+
       # ------------------------------------------
       # Checkout repository
       # ------------------------------------------
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ------------------------------------------
       # Configure Git
@@ -241,7 +247,9 @@ jobs:
         run: |
           git add kubernetes/deployment.yaml
 
-          git diff --cached --quiet || \
-          git commit -m "Update Kubernetes deployment with new image tag: ${{ needs.docker.outputs.image_tag }} [skip ci]"
-
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update Kubernetes deployment with new image tag: ${{ needs.docker.outputs.image_tag }} [skip ci]"
+            git push
+          fi
