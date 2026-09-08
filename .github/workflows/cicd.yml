@@ -162,7 +162,7 @@ jobs:
       # Build Docker image
       # ------------------------------------------
       - name: Build Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: false
@@ -187,7 +187,7 @@ jobs:
       # Push Docker image to Docker Hub
       # ------------------------------------------
       - name: Push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
